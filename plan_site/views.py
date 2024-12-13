@@ -3,6 +3,29 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from .models import Plan, Task, User, Report
 from .forms import PlanForm, TaskForm, UserForm, ReportForm
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from rest_framework.views import APIView
+
+class GenerateReport(APIView):
+    def get(self, request, *args, **kwargs):
+        # Создаем HTTP-ответ с заголовками для PDF
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
+
+        # Создаем объект canvas для PDF
+        p = canvas.Canvas(response, pagesize=letter)
+
+        # Пример добавления текста
+        p.drawString(100, 750, "Отчет по данным работы")
+        p.drawString(100, 730, "Задача выполнена успешно.")
+
+        # Завершаем создание PDF
+        p.showPage()
+        p.save()
+
+        return response
 
 
 def home(request):
@@ -170,3 +193,4 @@ def report_delete(request, pk):
         report.delete()
         return HttpResponseRedirect(reverse('report_list'))
     return render(request, 'plan_site/report_confirm_delete.html', {'report': report})
+

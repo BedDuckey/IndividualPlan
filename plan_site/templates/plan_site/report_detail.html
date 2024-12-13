@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Report Details</h1>
+        <p><strong>Name:</strong> {{ report.name }}</p>
+        <p><strong>Plan:</strong> {{ report.plan.name }}</p>
+        <p><strong>Status:</strong> {{ report.status.name }}</p>
+        <p><strong>Uploaded At:</strong> {{ report.uploaded_at|date:"Y-m-d H:i" }}</p>
+        <p><strong>File:</strong> <a href="{{ report.file.url }}" download>Download Report</a></p>
+        <a href="{% url 'report_update' report.pk %}" class="btn btn-warning">Edit</a>
+        <a href="{% url 'report_delete' report.pk %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'report_list' %}" class="btn btn-secondary">Back to List</a> </div>
+
+</body> </html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .container {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Task Details</h1>
+        <p><strong>Title:</strong> {{ task.title }}</p>
+        <p><strong>Plan:</strong> {{ task.plan.name }}</p>
+        <p><strong>Description:</strong> {{ task.description|default:"No description available." }}</p>
+        <p><strong>Status:</strong> {{ task.status.name }}</p>
+        <a href="{% url 'task_update' task.pk %}" class="btn btn-warning">Edit</a>
+        <a href="{% url 'task_delete' task.pk %}" class="btn btn-danger">Delete</a>
+        <a href="{% url 'task_list' %}" class="btn btn-secondary">Back to List</a>
+    </div>
+</body>
+</html>

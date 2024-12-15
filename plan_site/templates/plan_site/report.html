@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report List</title>
+</head>
+<body>
+    <h1>Report List</h1>
+    <button onclick="openForm()">Add New Report</button>
+
+    <div id="report-form" style="display:none;">
+        <h2>Add Report</h2>
+        <form id="report-form-content">
+            <input type="text" id="report-name" placeholder="Report Name" required><br>
+            <textarea id="report-description" placeholder="Report Description" required></textarea><br>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <ul id="reports-list"></ul>
+
+    <script>
+        // Fetch Reports from API
+        function fetchReports() {
+            fetch('/api/reports/')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById("reports-list");
+                    list.innerHTML = ''; // Clear existing list
+                    data.forEach(report => {
+                        let li = document.createElement("li");
+                        li.innerHTML = `${report.name} - ${report.description}
+                            <button onclick="editReport(${report.id})">Edit</button>
+                            <button onclick="deleteReport(${report.id})">Delete</button>`;
+                        list.appendChild(li);
+                    });
+                });
+        }
+
+        // Add a new Report
+        document.getElementById("report-form-content").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const name = document.getElementById("report-name").value;
+            const description = document.getElementById("report-description").value;
+
+            fetch('/api/reports/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, description: description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Report added successfully!");
+                fetchReports(); // Reload the list
+                document.getElementById("report-form").style.display = "none"; // Hide form
+            });
+        });
+
+        // Edit a report
+        function editReport(id) {
+            fetch(`/api/reports/${id}/`)
+                .then(response => response.json())
+                .then(report => {
+                    document.getElementById("report-name").value = report.name;
+                    document.getElementById("report-description").value = report.description;
+                    document.getElementById("report-form").style.display = "block";
+                    document.getElementById("report-form-content").onsubmit = function(event) {
+                        event.preventDefault();
+                        const name = document.getElementById("report-name").value;
+                        const description = document.getElementById("report-description").value;
+
+                        fetch(`/api/reports/${id}/`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: name, description: description })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert("Report updated successfully!");
+                            fetchReports(); // Reload the list
+                            document.getElementById("report-form").style.display = "none"; // Hide form
+                        });
+                    };
+                });
+        }
+
+        // Delete a report
+        function deleteReport(id) {
+            fetch(`/api/reports/${id}/`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                alert("Report deleted successfully!");
+                fetchReports(); // Reload the list
+            });
+        }
+
+        // Open Form for Adding a Report
+        function openForm() {
+            document.getElementById("report-form").style.display = "block";
+        }
+
+        // Initial fetch of reports
+        fetchReports();
+    </script>
+</body>
+</html>

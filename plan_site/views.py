@@ -1,12 +1,14 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponseRedirect
-from django.urls import reverse
-from .models import Plan, Task, User, Report
-from .forms import PlanForm, TaskForm, UserForm, ReportForm
+
+from .dao import *
+from .models import *
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from django.http import HttpResponse
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import *
+from django.http import HttpResponse
 
 class GenerateReport(APIView):
     def get(self, request, *args, **kwargs):
@@ -31,166 +33,158 @@ class GenerateReport(APIView):
 def home(request):
     return render(request, 'plan_site/home.html')
 
-# CRUD для Plan
+# -----------------------------------------------Планы-----------------------------------------------
+class PlanList(APIView):
+    def get(self, request):
+        plans = PlanDAO.get_all_plans()  # Используем DAO для получения данных
+        serializer = PlanSerializer(plans, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = PlanSerializer(data=request.data)
+        if serializer.is_valid():
+            new_plan = PlanDAO.create_plan(serializer.validated_data)  # Используем DAO для создания плана
+            return Response(PlanSerializer(new_plan).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class PlanDetail(APIView):
+    def get(self, request, pk):
+        plan = get_object_or_404(PlanDAO.get_all_plans(), pk=pk)  # Используем DAO
+        serializer = PlanSerializer(plan)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        plan = get_object_or_404(PlanDAO.get_all_plans(), pk=pk)
+        serializer = PlanSerializer(plan, data=request.data)
+        if serializer.is_valid():
+            updated_plan = PlanDAO.update_plan(plan, serializer.validated_data)  # Используем DAO
+            return Response(PlanSerializer(updated_plan).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        plan = get_object_or_404(PlanDAO.get_all_plans(), pk=pk)
+        PlanDAO.delete_plan(plan)  # Используем DAO
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# -----------------------------------------------Задачи-----------------------------------------------
+class TaskList(APIView):
+    def get(self, request):
+        tasks = TaskDAO.get_all_tasks()  # Используем DAO
+        serializer = TaskSerializer(tasks, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = TaskSerializer(data=request.data)
+        if serializer.is_valid():
+            new_task = TaskDAO.create_task(serializer.validated_data)  # Используем DAO
+            return Response(TaskSerializer(new_task).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TaskDetail(APIView):
+    def get(self, request, pk):
+        task = get_object_or_404(TaskDAO.get_all_tasks(), pk=pk)
+        serializer = TaskSerializer(task)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        task = get_object_or_404(TaskDAO.get_all_tasks(), pk=pk)
+        serializer = TaskSerializer(task, data=request.data)
+        if serializer.is_valid():
+            updated_task = TaskDAO.update_task(task, serializer.validated_data)  # Используем DAO
+            return Response(TaskSerializer(updated_task).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        task = get_object_or_404(TaskDAO.get_all_tasks(), pk=pk)
+        TaskDAO.delete_task(task)  # Используем DAO
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+#-----------------------------------------------Пользователи-----------------------------------------------
+class UserList(APIView):
+    def get(self, request):
+        users = UserDAO.get_all_users()  # Используем DAO
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid():
+            new_user = UserDAO.create_user(serializer.validated_data)  # Используем DAO
+            return Response(UserSerializer(new_user).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserDetail(APIView):
+    def get(self, request, pk):
+        user = get_object_or_404(UserDAO.get_all_users(), pk=pk)
+        serializer = UserSerializer(user)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        user = get_object_or_404(UserDAO.get_all_users(), pk=pk)
+        serializer = UserSerializer(user, data=request.data)
+        if serializer.is_valid():
+            updated_user = UserDAO.update_user(user, serializer.validated_data)  # Используем DAO
+            return Response(UserSerializer(updated_user).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        user = get_object_or_404(UserDAO.get_all_users(), pk=pk)
+        UserDAO.delete_user(user)  # Используем DAO
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+#-----------------------------------------------Отчеты-----------------------------------------------
+class ReportList(APIView):
+    def get(self, request):
+        reports = ReportDAO.get_all_reports()  # Используем DAO
+        serializer = ReportSerializer(reports, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = ReportSerializer(data=request.data)
+        if serializer.is_valid():
+            new_report = ReportDAO.create_report(serializer.validated_data)  # Используем DAO
+            return Response(ReportSerializer(new_report).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ReportDetail(APIView):
+    def get(self, request, pk):
+        report = get_object_or_404(ReportDAO.get_all_reports(), pk=pk)
+        serializer = ReportSerializer(report)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        report = get_object_or_404(ReportDAO.get_all_reports(), pk=pk)
+        serializer = ReportSerializer(report, data=request.data)
+        if serializer.is_valid():
+            updated_report = ReportDAO.update_report(report, serializer.validated_data)  # Используем DAO
+            return Response(ReportSerializer(updated_report).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        report = get_object_or_404(ReportDAO.get_all_reports(), pk=pk)
+        ReportDAO.delete_report(report)  # Используем DAO
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# Представление для страницы списка планов
 def plan_list(request):
-    plans = Plan.objects.all()
-    return render(request, 'plan_site/plan_list.html', {'plans': plans})
+    return render(request, 'plan_site/plan.html')
 
-def plan_create(request):
-    if request.method == 'POST':
-        form = PlanForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('plan_list')
-    else:
-        form = PlanForm()
-    return render(request, 'plan_site/plan_form.html', {'form': form})
-
-def plan_detail(request, pk):
-    plan = get_object_or_404(Plan, pk=pk)
-    return render(request, 'plan_site/plan_detail.html', {'plan': plan})
-
-def plan_update(request, pk):
-    plan = get_object_or_404(Plan, pk=pk)
-    if request.method == 'POST':
-        form = PlanForm(request.POST, instance=plan)
-        if form.is_valid():
-            form.save()
-            return redirect('plan_list')
-    else:
-        form = PlanForm(instance=plan)
-    return render(request, 'plan_site/plan_form.html', {'form': form, 'plan': plan})
-
-
-def plan_delete(request, pk):
-    plan = get_object_or_404(Plan, pk=pk)
-    if request.method == 'POST':
-        plan.delete()
-        return redirect('plan_list')  # Перенаправление на список планов
-    return render(request, 'plan_site/plan_confirm_delete.html', {'plan': plan})
-
-# CRUD для Task
+# Представление для страницы списка задач
 def task_list(request):
-    tasks = Task.objects.all()
-    return render(request, 'plan_site/task_list.html', {'tasks': tasks})
+    return render(request, 'plan_site/task.html')
 
-
-def task_create(request):
-    if request.method == 'POST':
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('task_list'))
-    else:
-        form = TaskForm()
-    return render(request, 'plan_site/task_form.html', {'form': form})
-
-
-def task_detail(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    return render(request, 'plan_site/task_detail.html', {'task': task})
-
-
-def task_update(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('task_list'))
-    else:
-        form = TaskForm(instance=task)
-    return render(request, 'plan_site/task_form.html', {'form': form})
-
-
-def task_delete(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    if request.method == 'POST':
-        task.delete()
-        return HttpResponseRedirect(reverse('task_list'))
-    return render(request, 'plan_site/task_confirm_delete.html', {'task': task})
-
-
-# CRUD для User
-def user_list(request):
-    users = User.objects.all()
-    return render(request, 'plan_site/user_list.html', {'users': users})
-
-
-def user_create(request):
-    if request.method == 'POST':
-        form = UserForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('user_list'))
-    else:
-        form = UserForm()
-    return render(request, 'plan_site/user_form.html', {'form': form})
-
-
-def user_detail(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    return render(request, 'plan_site/user_detail.html', {'user': user})
-
-
-def user_update(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    if request.method == 'POST':
-        form = UserForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('user_list'))
-    else:
-        form = UserForm(instance=user)
-    return render(request, 'plan_site/user_form.html', {'form': form})
-
-
-def user_delete(request, pk):
-    user = get_object_or_404(User, pk=pk)
-    if request.method == 'POST':
-        user.delete()
-        return HttpResponseRedirect(reverse('user_list'))
-    return render(request, 'plan_site/user_confirm_delete.html', {'user': user})
-
-
-# CRUD для Report
+# Представление для страницы списка отчетов
 def report_list(request):
-    reports = Report.objects.all()
-    return render(request, 'plan_site/report_list.html', {'reports': reports})
+    return render(request, 'plan_site/report.html')
 
-
-def report_create(request):
-    if request.method == 'POST':
-        form = ReportForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('report_list'))
-    else:
-        form = ReportForm()
-    return render(request, 'plan_site/report_form.html', {'form': form})
-
-
-def report_detail(request, pk):
-    report = get_object_or_404(Report, pk=pk)
-    return render(request, 'plan_site/report_detail.html', {'report': report})
-
-
-def report_update(request, pk):
-    report = get_object_or_404(Report, pk=pk)
-    if request.method == 'POST':
-        form = ReportForm(request.POST, request.FILES, instance=report)
-        if form.is_valid():
-            form.save()
-            return HttpResponseRedirect(reverse('report_list'))
-    else:
-        form = ReportForm(instance=report)
-    return render(request, 'plan_site/report_form.html', {'form': form})
-
-
-def report_delete(request, pk):
-    report = get_object_or_404(Report, pk=pk)
-    if request.method == 'POST':
-        report.delete()
-        return HttpResponseRedirect(reverse('report_list'))
-    return render(request, 'plan_site/report_confirm_delete.html', {'report': report})
-
+# Представление для страницы списка пользователей
+def user_list(request):
+    return render(request, 'plan_site/user.html')

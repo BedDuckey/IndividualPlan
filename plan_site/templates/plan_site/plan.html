@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan List</title>
+</head>
+<body>
+    <h1>Plan List</h1>
+    <button onclick="openForm()">Add New Plan</button>
+
+    <div id="plan-form" style="display:none;">
+        <h2>Add Plan</h2>
+        <form id="plan-form-content">
+            <input type="text" id="plan-name" placeholder="Plan Name" required><br>
+            <textarea id="plan-description" placeholder="Plan Description" required></textarea><br>
+            <button type="submit">Save</button>
+        </form>
+    </div>
+
+    <ul id="plans-list"></ul>
+
+    <script>
+        // Fetch Plans from API
+        function fetchPlans() {
+            fetch('/api/plans/')
+                .then(response => response.json())
+                .then(data => {
+                    const list = document.getElementById("plans-list");
+                    list.innerHTML = ''; // Clear existing list
+                    data.forEach(plan => {
+                        let li = document.createElement("li");
+                        li.innerHTML = `${plan.name} - ${plan.description}
+                            <button onclick="editPlan(${plan.id})">Edit</button>
+                            <button onclick="deletePlan(${plan.id})">Delete</button>`;
+                        list.appendChild(li);
+                    });
+                });
+        }
+
+        // Add a new Plan
+        document.getElementById("plan-form-content").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const name = document.getElementById("plan-name").value;
+            const description = document.getElementById("plan-description").value;
+
+            fetch('/api/plans/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, description: description })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert("Plan added successfully!");
+                fetchPlans(); // Reload the list
+                document.getElementById("plan-form").style.display = "none"; // Hide form
+            });
+        });
+
+        // Edit a plan
+        function editPlan(id) {
+            fetch(`/api/plans/${id}/`)
+                .then(response => response.json())
+                .then(plan => {
+                    document.getElementById("plan-name").value = plan.name;
+                    document.getElementById("plan-description").value = plan.description;
+                    document.getElementById("plan-form").style.display = "block";
+                    document.getElementById("plan-form-content").onsubmit = function(event) {
+                        event.preventDefault();
+                        const name = document.getElementById("plan-name").value;
+                        const description = document.getElementById("plan-description").value;
+
+                        fetch(`/api/plans/${id}/`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: name, description: description })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            alert("Plan updated successfully!");
+                            fetchPlans(); // Reload the list
+                            document.getElementById("plan-form").style.display = "none"; // Hide form
+                        });
+                    };
+                });
+        }
+
+        // Delete a plan
+        function deletePlan(id) {
+            fetch(`/api/plans/${id}/`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                alert("Plan deleted successfully!");
+                fetchPlans(); // Reload the list
+            });
+        }
+
+        // Open Form for Adding a Plan
+        function openForm() {
+            document.getElementById("plan-form").style.display = "block";
+        }
+
+        // Initial fetch of plans
+        fetchPlans();
+    </script>
+</body>
+</html>

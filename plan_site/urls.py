@@ -34,8 +34,3 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
 ]
-    #
-    # path('plans/', views.plan_list, name='plan_list'),
-    # path('tasks/', views.task_list, name='task_list'),
-    # path('reports/', views.report_list, name='report_list'),
-    # path('users/', views.user_list, name='user_list'),

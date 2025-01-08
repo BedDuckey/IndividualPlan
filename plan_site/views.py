@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import *
 from django.http import HttpResponse
+from drf_yasg.utils import swagger_auto_schema
 
 class GenerateReport(APIView):
     def get(self, request, *args, **kwargs):
@@ -35,11 +36,16 @@ def home(request):
 
 # -----------------------------------------------Планы-----------------------------------------------
 class PlanList(APIView):
+
     def get(self, request):
         plans = PlanDAO.get_all_plans()  # Используем DAO для получения данных
         serializer = PlanSerializer(plans, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        request_body=PlanSerializer,
+        responses={201: PlanSerializer}
+    )
     def post(self, request):
         serializer = PlanSerializer(data=request.data)
         if serializer.is_valid():
@@ -75,6 +81,10 @@ class TaskList(APIView):
         serializer = TaskSerializer(tasks, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        request_body=TaskSerializer,
+        responses={201: TaskSerializer}
+    )
     def post(self, request):
         serializer = TaskSerializer(data=request.data)
         if serializer.is_valid():
@@ -110,6 +120,10 @@ class UserList(APIView):
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        request_body=UserSerializer,
+        responses={201: UserSerializer}
+    )
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
@@ -145,6 +159,10 @@ class ReportList(APIView):
         serializer = ReportSerializer(reports, many=True)
         return Response(serializer.data)
 
+    @swagger_auto_schema(
+        request_body=ReportSerializer,
+        responses={201: ReportSerializer}
+    )
     def post(self, request):
         serializer = ReportSerializer(data=request.data)
         if serializer.is_valid():
